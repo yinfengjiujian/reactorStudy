@@ -1,0 +1,22 @@
+server:
+  port: 8888
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: reactor
+  datasource:
+    url: jdbc:mysql://localhost:3306/reactor?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging:
+  level:
+    org.springframework: info
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  mapper-locations: classpath*:/com/duanml/reactorstudy/**/*.xml
