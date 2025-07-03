@@ -13,14 +13,14 @@ import java.util.List;
  * <p>Copyright:Copyright(c)</p>
  * User: duanml
  * Date: 2025/7/3 20:50
- * Description: No Description
+ * Description: 用户批量生产者服务 入队列
  */
 @Service
 public class BatchUserService extends AbstractBatchProducer<User> {
 
-    private final static String QUEUE_KEY = "user:batch:queue";
+    private final static String QUEUE_KEY = "userTask:batch:queue";
 
-    private final static Integer QUEUE_SIZE = 100_000;
+    private final static Integer QUEUE_SIZE = 200_000;
 
     private final static Integer PAGE_SIZE = 5000;
 
