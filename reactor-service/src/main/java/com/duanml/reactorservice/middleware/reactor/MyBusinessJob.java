@@ -1,6 +1,6 @@
 package com.duanml.reactorservice.middleware.reactor;
 
-import com.duanml.reactorservice.middleware.reactor.consume.ReactorBatchExecutor;
+import com.duanml.reactorservice.middleware.reactor.consume.AbstractReactorBatchExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class MyBusinessJob extends ReactorBatchExecutor<Integer> {
+public class MyBusinessJob extends AbstractReactorBatchExecutor<Integer> {
 
     @Override
     protected void handleTask(Integer task) throws Exception {

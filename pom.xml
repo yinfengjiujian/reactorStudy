@@ -9,6 +9,7 @@
 
     <modules>
         <module>reactor-service</module>
+        <module>common-api</module>
         <!-- 以后你还可以加 common-api、别的service等 -->
     </modules>
 

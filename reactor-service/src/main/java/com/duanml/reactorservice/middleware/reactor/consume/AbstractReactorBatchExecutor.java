@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *            Description: 通用Reactor并发批处理
  */
 @Slf4j
-public abstract class ReactorBatchExecutor<T> {
+public abstract class AbstractReactorBatchExecutor<T> {
     // 可动态调整worker数
     private final AtomicInteger workerCount = new AtomicInteger(4);
     // 任务队列

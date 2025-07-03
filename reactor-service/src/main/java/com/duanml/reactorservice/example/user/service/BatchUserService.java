@@ -1,7 +1,7 @@
 package com.duanml.reactorservice.example.user.service;
 
-import com.duanml.reactorservice.biz.user.entity.User;
 import com.duanml.reactorservice.middleware.reactor.produce.AbstractBatchProducer;
+import com.duanml.user.UserTask;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.util.List;
  * Description: 用户批量生产者服务 入队列
  */
 @Service
-public class BatchUserService extends AbstractBatchProducer<User> {
+public class BatchUserService extends AbstractBatchProducer<UserTask> {
 
     private final static String QUEUE_KEY = "userTask:batch:queue";
 
@@ -29,12 +29,12 @@ public class BatchUserService extends AbstractBatchProducer<User> {
     }
 
     @Override
-    protected List<User> fetchBatch(int offset, int limit) {
+    protected List<UserTask> fetchBatch(int offset, int limit) {
         return List.of();
     }
 
     @Override
-    protected String toJson(User task) {
+    protected String toJson(UserTask task) {
         return "";
     }
 }

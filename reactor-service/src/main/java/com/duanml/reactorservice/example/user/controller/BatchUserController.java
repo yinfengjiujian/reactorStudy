@@ -1,8 +1,8 @@
 package com.duanml.reactorservice.example.user.controller;
 
-import com.duanml.reactorservice.biz.user.entity.User;
 import com.duanml.reactorservice.example.user.service.BatchUserService;
 import com.duanml.reactorservice.middleware.reactor.controller.AbstractBatchProducerController;
+import com.duanml.user.UserTask;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/batch/produce/user")
-public class BatchUserController extends AbstractBatchProducerController<User> {
+public class BatchUserController extends AbstractBatchProducerController<UserTask> {
 
     public BatchUserController(BatchUserService batchProducer) {
         super(batchProducer);
