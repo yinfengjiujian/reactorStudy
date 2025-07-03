@@ -1,0 +1,40 @@
+package com.duanml.reactorservice.example.user.service;
+
+import com.duanml.reactorservice.biz.user.entity.User;
+import com.duanml.reactorservice.middleware.reactor.produce.AbstractBatchProducer;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * <p>Title: com.duanml.reactorstudy.example.user.service</p>
+ * <p>Company:爱尔信息中心</p>
+ * <p>Copyright:Copyright(c)</p>
+ * User: duanml
+ * Date: 2025/7/3 20:50
+ * Description: No Description
+ */
+@Service
+public class BatchUserService extends AbstractBatchProducer<User> {
+
+    private final static String QUEUE_KEY = "user:batch:queue";
+
+    private final static Integer QUEUE_SIZE = 100_000;
+
+    private final static Integer PAGE_SIZE = 5000;
+
+    public BatchUserService(StringRedisTemplate redisTemplate) {
+        super(redisTemplate, QUEUE_KEY, QUEUE_SIZE, PAGE_SIZE);
+    }
+
+    @Override
+    protected List<User> fetchBatch(int offset, int limit) {
+        return List.of();
+    }
+
+    @Override
+    protected String toJson(User task) {
+        return "";
+    }
+}
