@@ -32,6 +32,13 @@ public class BatchUserService extends AbstractBatchProducer<UserTask> {
 
     @Override
     protected List<UserTask> fetchBatch(int offset, int limit) {
+        // 写入 key-value
+        redisTemplate.opsForValue().set("testKey", "this is ETH Chain");
+
+        // 读取 key 的值
+        String value = redisTemplate.opsForValue().get("testKey");
+        log.warn("Redis 中 testKey 的值为=>>>: " + value);
+
         log.info("UserTask fetchBatch offset: {}, limit: {}", offset, limit);
         return List.of();
     }
