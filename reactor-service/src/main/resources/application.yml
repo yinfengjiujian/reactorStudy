@@ -11,6 +11,13 @@ spring:
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+     redis:
+      host: localhost
+      port: 6379
+      password: 123456     #如果有密码
+      database: 0
+      timeout: 6000
 
 logging:
   level:
@@ -19,4 +26,4 @@ logging:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
-  mapper-locations: classpath*:/com/duanml/reactorstudy/**/*.xml
+  mapper-locations: classpath*:/com/duanml/reactorservice/**/*.xml

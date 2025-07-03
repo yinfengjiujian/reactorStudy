@@ -2,6 +2,7 @@ package com.duanml.reactorservice.example.user.service;
 
 import com.duanml.reactorservice.middleware.reactor.produce.AbstractBatchProducer;
 import com.duanml.user.UserTask;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * Date: 2025/7/3 20:50
  * Description: 用户批量生产者服务 入队列
  */
+@Slf4j
 @Service
 public class BatchUserService extends AbstractBatchProducer<UserTask> {
 
@@ -30,6 +32,7 @@ public class BatchUserService extends AbstractBatchProducer<UserTask> {
 
     @Override
     protected List<UserTask> fetchBatch(int offset, int limit) {
+        log.info("UserTask fetchBatch offset: {}, limit: {}", offset, limit);
         return List.of();
     }
 
