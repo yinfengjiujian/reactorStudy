@@ -1,8 +1,7 @@
 package com.duanml.reactorservice.middleware.reactor.controller;
 
 import com.duanml.reactorservice.middleware.reactor.produce.AbstractReactorProducerBatch;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * <p>Title: com.duanml.reactorstudy.middleware.reactor.controller</p>
@@ -20,19 +19,19 @@ public abstract class AbstractBatchProducerController<T> {
         this.batchProducer = batchProducer;
     }
 
-    @PostMapping("/start")
+    @RequestMapping("/start")
     public String start() {
         batchProducer.startProduce();
         return "Producer started";
     }
 
-    @PostMapping("/stop")
+    @RequestMapping("/stop")
     public String stop() {
         batchProducer.requestStop();
         return "Producer stop requested";
     }
 
-    @GetMapping("/status")
+    @RequestMapping("/status")
     public AbstractReactorProducerBatch.ProducerStatus status() {
         return batchProducer.status();
     }

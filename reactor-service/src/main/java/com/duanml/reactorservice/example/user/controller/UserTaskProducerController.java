@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Description: No Description
  */
 @RestController
-@RequestMapping("/api/batch/produce/user")
+@RequestMapping("/api/user/task/produce")
 public class UserTaskProducerController extends AbstractBatchProducerController<UserTask> {
 
     public UserTaskProducerController(UserTaskProducerServiceBatch batchProducer) {
