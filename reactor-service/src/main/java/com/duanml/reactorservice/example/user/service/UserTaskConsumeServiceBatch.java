@@ -1,30 +1,27 @@
-package com.duanml.reactorservice.middleware.reactor;
+package com.duanml.reactorservice.example.user.service;
 
-import com.duanml.reactorservice.middleware.reactor.consume.AbstractReactorBatchExecutor;
+import com.duanml.reactorservice.middleware.reactor.consume.AbstractReactorConsumeBatch;
 import com.duanml.reactorservice.utils.JacksonUtil;
 import com.duanml.user.UserTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
- * <p>Title: com.duanml.reactorstudy.reactor</p>
+ * <p>Title: com.duanml.reactorservice.example.user.service</p>
  * <p>Company:爱尔信息中心</p>
  * <p>Copyright:Copyright(c)</p>
  * User: duanml
- * Date: 2025/7/2 23:27
+ * Date: 2025/7/4 10:56
  * Description: No Description
- * ReactorBatchExecutor<T>
- *     T  是一个泛型，支持复查业务对象
- *
  */
 @Slf4j
-@Component
-public class MyBusinessJob extends AbstractReactorBatchExecutor<UserTask> {
+@Service
+public class UserTaskConsumeServiceBatch extends AbstractReactorConsumeBatch<UserTask> {
 
     private final static String QUEUE_KEY = "userTask:batch:queue";
 
-    public MyBusinessJob(StringRedisTemplate redisTemplate) {
+    public UserTaskConsumeServiceBatch(StringRedisTemplate redisTemplate) {
         super(redisTemplate, QUEUE_KEY);
     }
 
@@ -49,6 +46,4 @@ public class MyBusinessJob extends AbstractReactorBatchExecutor<UserTask> {
     protected UserTask deserializeTask(String taskStr) {
         return JacksonUtil.fromJson(taskStr, UserTask.class);
     }
-
-
 }

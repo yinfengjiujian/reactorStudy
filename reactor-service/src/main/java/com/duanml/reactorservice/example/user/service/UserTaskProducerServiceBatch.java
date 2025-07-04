@@ -1,6 +1,6 @@
 package com.duanml.reactorservice.example.user.service;
 
-import com.duanml.reactorservice.middleware.reactor.produce.AbstractBatchProducer;
+import com.duanml.reactorservice.middleware.reactor.produce.AbstractReactorProducerBatch;
 import com.duanml.user.UserTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class BatchUserService extends AbstractBatchProducer<UserTask> {
+public class UserTaskProducerServiceBatch extends AbstractReactorProducerBatch<UserTask> {
 
     private final static String QUEUE_KEY = "userTask:batch:queue";
 
@@ -26,7 +26,7 @@ public class BatchUserService extends AbstractBatchProducer<UserTask> {
 
     private final static Integer PAGE_SIZE = 5000;
 
-    public BatchUserService(StringRedisTemplate redisTemplate) {
+    public UserTaskProducerServiceBatch(StringRedisTemplate redisTemplate) {
         super(redisTemplate, QUEUE_KEY, QUEUE_SIZE, PAGE_SIZE);
     }
 

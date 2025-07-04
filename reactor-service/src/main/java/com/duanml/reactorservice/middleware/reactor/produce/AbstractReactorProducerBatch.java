@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Description: 批量生产者基类
  */
 @Slf4j
-public abstract class AbstractBatchProducer<T> {
+public abstract class AbstractReactorProducerBatch<T> {
 
     protected final StringRedisTemplate redisTemplate;
     protected final String queueKey;
@@ -25,8 +25,8 @@ public abstract class AbstractBatchProducer<T> {
     private final AtomicBoolean stopRequested = new AtomicBoolean(false);
     private Thread workerThread;
 
-    public AbstractBatchProducer(StringRedisTemplate redisTemplate, String queueKey,
-                                 int queueMaxLength, int pageSize) {
+    public AbstractReactorProducerBatch(StringRedisTemplate redisTemplate, String queueKey,
+                                        int queueMaxLength, int pageSize) {
         this.redisTemplate = redisTemplate;
         this.queueKey = queueKey;
         this.queueMaxLength = queueMaxLength;

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *            Description: 通用Reactor并发批处理
  */
 @Slf4j
-public abstract class AbstractReactorBatchExecutor<T> {
+public abstract class AbstractReactorConsumeBatch<T> {
     // 默认worker数量
     private final AtomicInteger workerCount = new AtomicInteger(8);
     // 是否运行中
@@ -48,7 +48,7 @@ public abstract class AbstractReactorBatchExecutor<T> {
     private final AtomicInteger activeWorkers = new AtomicInteger(0);
     private final Object shutdownLock = new Object();
 
-    public AbstractReactorBatchExecutor(StringRedisTemplate redisTemplate, String queueKey) {
+    public AbstractReactorConsumeBatch(StringRedisTemplate redisTemplate, String queueKey) {
         this.redisTemplate = redisTemplate;
         this.queueKey = queueKey;
     }
@@ -98,7 +98,7 @@ public abstract class AbstractReactorBatchExecutor<T> {
     }
 
     /**
-     * 动态调整worker数量
+     * 动态调整worker数量  指的是运行的线程总数
      */
     public synchronized void adjustWorkerCount(int newCount) {
         int oldCount = workerCount.get();
@@ -236,6 +236,10 @@ public abstract class AbstractReactorBatchExecutor<T> {
 
     public int getActiveWorkers() {
         return activeWorkers.get();
+    }
+
+    public boolean isRunning() {
+        return isRunning.get();
     }
 
     public int getWorkerCount() {
