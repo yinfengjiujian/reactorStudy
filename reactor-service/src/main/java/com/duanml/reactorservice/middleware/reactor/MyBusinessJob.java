@@ -1,7 +1,10 @@
 package com.duanml.reactorservice.middleware.reactor;
 
 import com.duanml.reactorservice.middleware.reactor.consume.AbstractReactorBatchExecutor;
+import com.duanml.reactorservice.utils.JacksonUtil;
+import com.duanml.user.UserTask;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,10 +20,16 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class MyBusinessJob extends AbstractReactorBatchExecutor<Integer> {
+public class MyBusinessJob extends AbstractReactorBatchExecutor<UserTask> {
+
+    private final static String QUEUE_KEY = "userTask:batch:queue";
+
+    public MyBusinessJob(StringRedisTemplate redisTemplate) {
+        super(redisTemplate, QUEUE_KEY);
+    }
 
     @Override
-    protected void handleTask(Integer task) throws Exception {
+    protected void handleTask(UserTask task) throws Exception {
         // 你的单个任务处理逻辑
         log.info("处理任务: {}", task);
         // ... 业务代码 ...
@@ -32,8 +41,13 @@ public class MyBusinessJob extends AbstractReactorBatchExecutor<Integer> {
     }
 
     @Override
-    protected void onTaskError(Integer task, Exception e, int retryCount) {
+    protected void onTaskError(UserTask task, Exception e, int retryCount) {
         log.error("任务处理失败: {}, 第{}次: {}", task, retryCount, e.getMessage());
+    }
+
+    @Override
+    protected UserTask deserializeTask(String taskStr) {
+        return JacksonUtil.fromJson(taskStr, UserTask.class);
     }
 
 
