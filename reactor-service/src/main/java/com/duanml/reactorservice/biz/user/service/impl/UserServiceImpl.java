@@ -31,4 +31,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<User> users = this.baseMapper.selectList(wrapper);
         return users;
     }
+
+    @Override
+    public void insertUserBatch(List<User> users) {
+        this.saveBatch(users);
+    }
 }

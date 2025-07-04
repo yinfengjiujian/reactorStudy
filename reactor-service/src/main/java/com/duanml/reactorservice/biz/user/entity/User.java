@@ -12,7 +12,7 @@ import java.util.Date;
 public class User {
     @TableId
     @TableField(value = "id")
-    private Integer id;
+    private Long id;
 
     @TableField(value = "username")
     private String username;
@@ -22,6 +22,9 @@ public class User {
 
     @TableField(value = "email")
     private String email;
+
+    @TableField(value = "phone")
+    private String phone;
 
     @TableField(exist = false)
     private Long userId;

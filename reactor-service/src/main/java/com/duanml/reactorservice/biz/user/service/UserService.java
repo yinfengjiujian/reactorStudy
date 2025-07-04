@@ -17,4 +17,6 @@ import java.util.List;
 public interface UserService {
 
     List<User> getAllUsers();
+
+    void insertUserBatch(List<User> users);
 }

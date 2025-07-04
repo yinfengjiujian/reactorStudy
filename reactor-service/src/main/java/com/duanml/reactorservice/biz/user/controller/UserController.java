@@ -30,7 +30,7 @@ public class UserController {
     public User getUser() {
         List<User> allUsers = userService.getAllUsers();
         User user = new User();
-        user.setId(1);
+        user.setId(1L);
         user.setUsername("独孤九剑");
         user.setPassword("web3@demo.io");
         user.setEmail("duanml@qq.com");
