@@ -8,6 +8,9 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
     <!-- 定义日志的根目录 -->
     <!-- 日志根路径，根据 profile 分目录 -->
     <springProperty scope="context" name="ENV" source="spring.profiles.active" />
+    <!-- 读取 spring.application.name -->
+    <property name="PROJECT_NAME" value="${spring.application.name}" />
+
     <property name="LOG_HOME" value="logs/${ENV}" />
 
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
@@ -31,9 +34,9 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
 
     <!-- 按文件大小滚动的 FILE Appender -->
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/app.log</file>
+        <file>${LOG_HOME}/${PROJECT_NAME}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/app.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/${PROJECT_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>10GB</totalSizeCap>
@@ -46,9 +49,9 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
 
     <!-- 针对 ERROR 日志单独输出 -->
     <appender name="ErrorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/error.log</file>
+        <file>${LOG_HOME}/${PROJECT_NAME}-error.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/${PROJECT_NAME}-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
