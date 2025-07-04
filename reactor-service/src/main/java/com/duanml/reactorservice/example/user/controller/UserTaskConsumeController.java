@@ -1,9 +1,12 @@
 package com.duanml.reactorservice.example.user.controller;
 
+import com.duanml.reactorservice.biz.config.NodeProperties;
 import com.duanml.reactorservice.example.user.service.UserTaskConsumeServiceBatch;
 import com.duanml.reactorservice.middleware.reactor.controller.AbstractBatchConsumeController;
 import com.duanml.user.UserTask;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,8 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserTaskConsumeController extends AbstractBatchConsumeController<UserTask, UserTaskConsumeServiceBatch> {
 
     @Autowired
-    public UserTaskConsumeController(UserTaskConsumeServiceBatch executor) {
-        super(executor);
+    public UserTaskConsumeController(UserTaskConsumeServiceBatch executor, StringRedisTemplate redisTemplate,
+                                     NodeProperties nodeProperties) {
+        super(executor, redisTemplate, nodeProperties.getId());
     }
 
 }

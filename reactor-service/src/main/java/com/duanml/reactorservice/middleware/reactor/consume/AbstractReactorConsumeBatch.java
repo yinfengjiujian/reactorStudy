@@ -13,48 +13,62 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <p>Title: com.duanml.reactorstudy.reactor</p>
- * <p>Company:爱尔信息中心</p>
- * <p>Copyright:Copyright(c)</p>
- * User: duanml
- * Date: 2025/7/2 23:11
+ * 通用Reactor并发批处理抽象基类
+ * ================================================
+ * 1. 支持分布式场景下多线程批量消费Redis队列
+ * 2. 支持worker动态调整
+ * 3. 支持优雅停机
+ * 4. 内置简单监控
  *
- * @param <T> 任务类型
- *            Description: 通用Reactor并发批处理
+ * @param <T> 任务类型，如订单、消息等
  */
 @Slf4j
 public abstract class AbstractReactorConsumeBatch<T> {
-    // 默认worker数量
+    // 当前worker数量（线程数），可动态调整
     private final AtomicInteger workerCount = new AtomicInteger(8);
-    // 是否运行中
-    private final AtomicBoolean isRunning = new AtomicBoolean(false);
-    // 使用Reactor调度器 这个适合I/O密集型任务
-    private final Scheduler scheduler = Schedulers.boundedElastic();
-    // 多线程安全的worker句柄集合
-    private final Set<Disposable> workerHandles = Collections.synchronizedSet(new java.util.HashSet<>());
-    // 监控指标
-    private final AtomicInteger completed = new AtomicInteger(0);
-    private final AtomicInteger failed = new AtomicInteger(0);
-    private final AtomicInteger retried = new AtomicInteger(0);
-    private final AtomicInteger discarded = new AtomicInteger(0);
 
-    // Redis队列配置
+    // 是否运行中标志
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    // Reactor调度器，适合I/O密集型任务调度
+    private final Scheduler scheduler = Schedulers.boundedElastic();
+
+    // 记录所有worker的句柄，用于停止和管理
+    private final Set<Disposable> workerHandles = Collections.synchronizedSet(new java.util.HashSet<>());
+
+    // 监控指标
+    private final AtomicInteger completed = new AtomicInteger(0); // 完成数
+    private final AtomicInteger failed = new AtomicInteger(0);    // 失败数
+    private final AtomicInteger retried = new AtomicInteger(0);   // 重试数
+    private final AtomicInteger discarded = new AtomicInteger(0); // 反序列化丢弃数
+
+    // Redis队列
     protected final StringRedisTemplate redisTemplate;
     protected final String queueKey;
+
+    // 任务最大重试次数
     protected volatile int maxRetry = 2;
+    // 任务处理超时时间，0为不限
     protected volatile long taskTimeoutMillis = 0L;
 
-    // 优雅停机辅助
+    // 当前活跃worker数
     private final AtomicInteger activeWorkers = new AtomicInteger(0);
-    private final Object shutdownLock = new Object();
+    private final Object shutdownLock = new Object(); // 优雅停机用锁
 
+    /**
+     * 构造方法
+     * @param redisTemplate Redis操作模板
+     * @param queueKey 队列key
+     */
     public AbstractReactorConsumeBatch(StringRedisTemplate redisTemplate, String queueKey) {
         this.redisTemplate = redisTemplate;
         this.queueKey = queueKey;
     }
 
     /**
-     * 启动消费
+     * 启动批量消费
+     * 会先调用stop()，保证不会重复启动
+     * @param workerNum 启动worker线程数
      */
     public synchronized void start(int workerNum) {
         stop(); // 先停再启，防止重复启动
@@ -72,13 +86,12 @@ public abstract class AbstractReactorConsumeBatch<T> {
     }
 
     /**
-     * 优雅停机：等待worker自然退出
+     * 优雅停机：通知所有worker自然退出，并等待全部退出
      */
     public void stop() {
         if (!isRunning.compareAndSet(true, false)) {
             return; // 已经停止
         }
-        // 提示worker退出
         log.info("分布式批处理优雅停机中，通知worker退出...");
 
         // 等待所有worker自然退出
@@ -98,39 +111,44 @@ public abstract class AbstractReactorConsumeBatch<T> {
     }
 
     /**
-     * 动态调整worker数量  指的是运行的线程总数
+     * 动态调整worker线程数
+     * @param newCount 新线程总数
      */
     public synchronized void adjustWorkerCount(int newCount) {
         int oldCount = workerCount.get();
         if (newCount == oldCount) return;
         log.info("调整worker数量：{} -> {}", oldCount, newCount);
         if (newCount > oldCount) {
+            // 增加新worker
             for (int i = oldCount; i < newCount; i++) {
                 Disposable handle = scheduler.schedule(workerRunnable(i + 1));
                 workerHandles.add(handle);
             }
             workerCount.set(newCount);
         } else if (newCount < oldCount) {
+            // worker数量减少，多余worker自动检测到自己编号超限后自行退出
             workerCount.set(newCount);
-            // 多余worker自动自然退出（见workerRunnable中的判断）
         }
     }
 
-
-    // ================ worker核心逻辑 ================
+    /**
+     * worker线程处理主循环
+     * @param workerId worker编号（1开始）
+     */
     private Runnable workerRunnable(int workerId) {
         return () -> {
             activeWorkers.incrementAndGet();
             try {
                 while (isRunning.get() && workerHandles.size() <= workerCount.get()) {
-                    // 如果worker数量减少，部分worker自动退出
+                    // 如果worker数量减少，超出worker自动退出
                     if (workerId > workerCount.get()) {
                         log.info("Worker-{} 超出当前worker数量限制, 退出", workerId);
                         break;
                     }
-                    // 从Redis队列中获取任务
+                    // 从Redis队列拉取任务
                     String taskStr = redisTemplate.opsForList().leftPop(queueKey, 2, TimeUnit.SECONDS);
                     if (taskStr == null) {
+                        // 无任务，短暂休眠
                         try {
                             Thread.sleep(200);
                         } catch (InterruptedException ignored) {
@@ -149,13 +167,14 @@ public abstract class AbstractReactorConsumeBatch<T> {
                         continue;
                     }
 
-                    // 单个处理任务逻辑
+                    // 单个任务处理及重试
                     int retryCount = 0;
                     boolean success = false;
                     Exception lastEx = null;
                     do {
                         try {
                             if (taskTimeoutMillis > 0) {
+                                // 带超时的处理
                                 final T finalTask = task;
                                 final Exception[] exHolder = new Exception[1];
                                 Thread t = new Thread(() -> {
@@ -195,7 +214,7 @@ public abstract class AbstractReactorConsumeBatch<T> {
                     if (!success) {
                         failed.incrementAndGet();
                         onTaskFailed(task, lastEx);
-                        // 可扩展记录到失败队列或报警等
+                        // TODO: 可扩展：失败任务入库、告警等
                     }
                 }
             } finally {
@@ -208,15 +227,17 @@ public abstract class AbstractReactorConsumeBatch<T> {
         };
     }
 
+    // ===================== 配置及监控相关 ========================
+
+    /** 设置最大重试次数 */
     public void setMaxRetry(int maxRetry) {
         this.maxRetry = maxRetry;
     }
 
+    /** 设置单任务超时时间，单位ms */
     public void setTaskTimeoutMillis(long millis) {
         this.taskTimeoutMillis = millis;
     }
-
-    // ===================== 监控相关 ========================
 
     public int getCompleted() {
         return completed.get();
@@ -246,25 +267,27 @@ public abstract class AbstractReactorConsumeBatch<T> {
         return workerCount.get();
     }
 
-    // =================== 子类实现区域 ===================
-    // 任务处理
+    // =================== 子类需实现/可扩展 ===================
+
+    /** 任务处理主逻辑，必须实现 */
     protected abstract void handleTask(T task) throws Exception;
-    // 任务反序列化
+
+    /** 任务反序列化，必须实现 */
     protected abstract T deserializeTask(String taskStr);
 
-    // 可选：批处理全部完成时
+    /** 可选：批处理全部完成时钩子 */
     protected void onFinish() {
     }
 
-    // 可选：单个任务错误时
+    /** 可选：单任务处理出错时钩子 */
     protected void onTaskError(T task, Exception e, int retryCount) {
     }
 
-    // 可选：任务最终失败时
+    /** 可选：任务最终失败时钩子 */
     protected void onTaskFailed(T task, Exception e) {
     }
 
-    // 可选：反序列化丢弃
+    /** 可选：反序列化失败丢弃钩子 */
     protected void onTaskDiscarded(String rawTask, Exception e) {
     }
 }
