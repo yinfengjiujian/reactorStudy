@@ -50,7 +50,7 @@ public class UserTaskConsumeServiceBatch extends AbstractReactorConsumeBatch<Use
             return;
         }
         // 模拟实际耗时，这里睡眠500毫秒
-        Thread.sleep(200);
+        Thread.sleep(50);
         // 常见运营商号段（简化，仅列举部分）
         String[] prefixes = {"133", "149", "153", "173", "177", "180", "181", "189", // 电信
                 "130", "131", "132", "145", "155", "156", "166", "175", "176", "185", "186", // 联通

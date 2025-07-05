@@ -151,6 +151,7 @@ public abstract class AbstractReactorConsumeBatch<T> {
                         // 无任务，短暂休眠
                         try {
                             Thread.sleep(200);
+                            log.warn("Worker-{} 无任务，休眠中...", workerId);
                         } catch (InterruptedException ignored) {
                         }
                         continue;

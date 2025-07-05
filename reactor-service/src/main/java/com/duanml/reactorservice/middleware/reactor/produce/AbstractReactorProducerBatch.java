@@ -109,6 +109,7 @@ public abstract class AbstractReactorProducerBatch<T> {
                     String primaryKey = getPrimaryKey(task); // 获取主键（唯一标识）
                     // 先查去重集合，未出现过才入队
                     if (!shouldPush(primaryKey)) {
+                        log.info("Skip push, already pushed====>>>>:{}", primaryKey);
                         continue;
                     }
                     // 入队
