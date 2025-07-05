@@ -1,6 +1,7 @@
 package com.duanml.reactorservice.example.user.service;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.duanml.reactorservice.biz.user.entity.User;
 import com.duanml.reactorservice.biz.user.service.UserService;
 import com.duanml.reactorservice.middleware.reactor.consume.AbstractReactorConsumeBatch;
@@ -35,8 +36,19 @@ public class UserTaskConsumeServiceBatch extends AbstractReactorConsumeBatch<Use
         super(redisTemplate, QUEUE_KEY);
     }
 
+    /**
+     * 需要幂等消费，必须这样做，避免重复消费
+     * @param task
+     * @throws Exception
+     */
     @Override
     protected void handleTask(UserTask task) throws Exception {
+        User serviceById = userService.getById(task.getId());
+        if (StringUtils.isNotBlank(serviceById.getPhone())) {
+            // 如果手机号已存在，跳过处理,已经处理过了不再处理，达到幂等消费的目的
+            log.warn("手机号已存在，跳过处理: {}", serviceById.getId());
+            return;
+        }
         // 模拟实际耗时，这里睡眠500毫秒
         Thread.sleep(200);
         // 常见运营商号段（简化，仅列举部分）
