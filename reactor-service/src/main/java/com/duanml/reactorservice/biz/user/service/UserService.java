@@ -2,6 +2,7 @@ package com.duanml.reactorservice.biz.user.service;
 
 
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.duanml.reactorservice.biz.user.entity.User;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * Date: 2025/7/1 23:05
  * Description: No Description
  */
-public interface UserService {
+public interface UserService extends IService<User> {
 
     List<User> getAllUsers();
 

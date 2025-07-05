@@ -9,7 +9,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
     <!-- 日志根路径，根据 profile 分目录 -->
     <springProperty scope="context" name="ENV" source="spring.profiles.active" />
     <!-- 读取 spring.application.name -->
-    <property name="PROJECT_NAME" value="${spring.application.name}" />
+    <springProperty scope="context" name="PROJECT_NAME" source="spring.application.name" />
 
     <property name="LOG_HOME" value="logs/${ENV}" />
 

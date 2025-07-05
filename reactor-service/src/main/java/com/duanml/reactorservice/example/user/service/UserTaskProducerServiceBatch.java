@@ -1,12 +1,19 @@
 package com.duanml.reactorservice.example.user.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.duanml.reactorservice.biz.user.entity.User;
+import com.duanml.reactorservice.biz.user.service.UserService;
 import com.duanml.reactorservice.middleware.reactor.produce.AbstractReactorProducerBatch;
+import com.duanml.reactorservice.utils.JacksonUtil;
 import com.duanml.user.UserTask;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>Title: com.duanml.reactorstudy.example.user.service</p>
@@ -20,6 +27,9 @@ import java.util.List;
 @Service
 public class UserTaskProducerServiceBatch extends AbstractReactorProducerBatch<UserTask> {
 
+    @Resource
+    private UserService userService;
+
     private final static String QUEUE_KEY = "userTask:batch:queue";
 
     private final static Integer QUEUE_SIZE = 200_000;
@@ -32,19 +42,30 @@ public class UserTaskProducerServiceBatch extends AbstractReactorProducerBatch<U
 
     @Override
     protected List<UserTask> fetchBatch(int offset, int limit) {
-        // 写入 key-value
-        redisTemplate.opsForValue().set("testKey", "this is ETH Chain");
-
-        // 读取 key 的值
-        String value = redisTemplate.opsForValue().get("testKey");
-        log.warn("Redis 中 testKey 的值为=>>>: " + value);
-
         log.info("UserTask fetchBatch offset: {}, limit: {}", offset, limit);
-        return List.of();
+
+        // 构造分页对象：MyBatis-Plus 的 Page 默认页码从 1 开始
+        int page = offset / limit + 1;
+        Page<User> userPage = new Page<>(page, limit);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.isNull("phone");
+        queryWrapper.orderByAsc("id");
+
+        Page<User> userListPage = userService.page(userPage, queryWrapper);
+        List<UserTask> collect = userListPage.getRecords().stream().map(user -> {
+            UserTask userTask = new UserTask();
+            userTask.setId(user.getId());
+            userTask.setUsername(user.getUsername());
+            userTask.setPassword(user.getPassword());
+            userTask.setEmail(user.getEmail());
+            userTask.setCreatedAt(user.getCreatedAt());
+            return userTask;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
     protected String toJson(UserTask task) {
-        return "";
+        return JacksonUtil.toJson(task);
     }
 }

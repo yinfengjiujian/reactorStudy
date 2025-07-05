@@ -14,10 +14,9 @@ import java.util.Date;
  * Description: No Description
  */
 @Data
-@Builder
 public class UserTask {
 
-    private Integer id;
+    private Long id;
 
     private String username;
 
@@ -28,4 +27,6 @@ public class UserTask {
     private Long userId;
 
     private Date createdAt;
+
+    private String phone;
 }
