@@ -32,12 +32,14 @@ public class UserTaskProducerServiceBatch extends AbstractReactorProducerBatch<U
 
     private final static String QUEUE_KEY = "userTask:batch:queue";
 
-    private final static Integer QUEUE_SIZE = 200_000;
+    private final static Integer QUEUE_SIZE = 50_000;
 
     private final static Integer PAGE_SIZE = 5000;
 
+    private final static String BLOOM_KEY = "userTask:batch:dedup:bloom";
+
     public UserTaskProducerServiceBatch(StringRedisTemplate redisTemplate) {
-        super(redisTemplate, QUEUE_KEY, QUEUE_SIZE, PAGE_SIZE);
+        super(redisTemplate, QUEUE_KEY, QUEUE_SIZE, PAGE_SIZE, DedupType.BLOOM, BLOOM_KEY);
     }
 
     @Override
@@ -68,4 +70,16 @@ public class UserTaskProducerServiceBatch extends AbstractReactorProducerBatch<U
     protected String toJson(UserTask task) {
         return JacksonUtil.toJson(task);
     }
+
+    /**
+     * 这里返回的key  是用来redis做防止消息重复入队列用的
+     * @param task
+     * @return
+     */
+    @Override
+    protected String getPrimaryKey(UserTask task) {
+        return String.valueOf(task.getId());
+    }
+
+
 }
